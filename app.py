@@ -1,15 +1,11 @@
-""" 
- Main file that starts the app
- Contains endpoints for the app
-"""
+#----------------------------------------------------------------------------#
 # Imports
-
+#----------------------------------------------------------------------------#
 import json
 import logging
 import os
 import sys
 from logging import FileHandler, Formatter
-
 import babel
 import dateutil.parser
 from flask import (Flask, Response, flash, jsonify, 
@@ -18,22 +14,30 @@ from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import Form
-
 from forms import *
+
+
+#----------------------------------------------------------------------------#
+# Models.
 from Model import db, Artist, Venue, Show
+#----------------------------------------------------------------------------#
 
-# App Config.
-
-
+#----------------------------------------------------------------------------#
+#App Configurations
+#----------------------------------------------------------------------------#
+# TODO: implement any missing fields, as a database migration using Flask-Migrate
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db.init_app(app)
 migrate = Migrate(app, db)
 
+# TODO: connect to a local postgresql database
 SQLALCHEMY_DATABASE_URI = 'postgresql://postgres@localhost:5432/fyurr'
-# Filters.
 
+#----------------------------------------------------------------------------#
+# Filters.
+#----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
@@ -46,17 +50,20 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
-# Controllers.
 
+#----------------------------------------------------------------------------#
+# Controllers.
+#----------------------------------------------------------------------------#
 
 @app.route('/')
 def index():
     return render_template('pages/home.html')
 
 
-pass
+#----------------------------------------------------------------------------#
+# Artists sections
+#----------------------------------------------------------------------------#
 
-# Artists
 # Create Artist
 
 
@@ -109,16 +116,16 @@ def artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-    # shows the artist page with the given venue_id
+   
     artist = Artist.query.get(artist_id)
 
     past_shows = list(filter(lambda x: x.start_time <
-                             datetime.today(), artist.shows))  #Anoymouse function that filters past shows
+                             datetime.today(), artist.shows)) 
     upcoming_shows = list(filter(lambda x: x.start_time >=
                                  datetime.today(), artist.shows))
 
     past_shows = list(map(lambda x: x.show_venue(), past_shows))
-    upcoming_shows = list(map(lambda x: x.show_venue(), upcoming_shows))  #Anoymouse function that filters upcoming shows
+    upcoming_shows = list(map(lambda x: x.show_venue(), upcoming_shows))  
 
     data = artist.to_dict()
     print(data)
@@ -172,7 +179,7 @@ def edit_artist_submission(artist_id):
 def search_artists():
     search_term = request.form.get('search_term')
     search_results = Artist.query.filter(
-        Artist.name.ilike('%{}%'.format(search_term))).all()  # search results by ilike matching partern to match every search term
+        Artist.name.ilike('%{}%'.format(search_term))).all()  
 
     response = {}
     response['count'] = len(search_results)
@@ -182,7 +189,10 @@ def search_artists():
                            results=response,
                            search_term=request.form.get('search_term', ''))
 
-# Venues
+
+#----------------------------------------------------------------------------#
+# Venues Section
+#----------------------------------------------------------------------------#
 #  Create Venue
 
 
@@ -222,6 +232,8 @@ def create_venue_submission():
     return render_template('pages/home.html')
 
 
+  # TODO: replace with real venues data.
+  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
 @app.route('/venues')
 def venues():
     venues = Venue.query.order_by(Venue.state, Venue.city).all()
@@ -252,6 +264,9 @@ def venues():
     return render_template('pages/venues.html', areas=data)
 
 
+ # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # seach for Hop should return "The Musical Hop".
+  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
     search_term = request.form.get('search_term')
@@ -274,7 +289,8 @@ def search_venues():
                            results=response,
                            search_term=request.form.get('search_term', ''))
 
-
+# shows the venue page with the given venue_id
+  # TODO: replace with real venue data from the venues table, using venue_id
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     venue = Venue.query.get(venue_id)
@@ -405,8 +421,9 @@ if not app.debug:
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
 
+#----------------------------------------------------------------------------#
 # Launch.
-
+#----------------------------------------------------------------------------#
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
