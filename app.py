@@ -222,7 +222,7 @@ def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   form = VenueForm()
- 
+  error = False
   try:
     venue_name = request.form.get('name')
     venue_city = request.form.get('city')
@@ -236,18 +236,17 @@ def create_venue_submission():
     seekingTalent = request.form.get('seeking_talent')
     seekingDescription = request.form.get('seeking_description')
     name_dub = Venue.query.filter_by(name=venue_name).all()
-    if (seekingTalent == 'y'):
-      seekingTalent= True
+   
+    if error: 
+        flash('An error occurred. Venue ' + request.form['venue_name'] + ' could not be listed.')
+    if not error:
+      flash('Venue ' + request.form['venue_name'] + ' was successfully listed!') 
+    
     else:
-      seekingTalent= False  
-    if name_dub:
-      flash('Venue ' + request.form['venue_name'] + ' Already Exist!')
-  
-    else:
-      createVenue = Venue(name=venue_name, city=venue_city, state=venue_state, address=venue_address, phone=contact, genres=genres, facebook_link=facebookLink, image_link=imageLink, website_link=websiteLink, seeking_talent=seekingTalent, seeking_description=seekingDescription)
-      print(createVenue.__dict__)
-      db.session.add(createVenue)
-      db.session.commit()
+        createVenue = Venue(name=venue_name, city=venue_city, state=venue_state, address=venue_address, phone=contact, genres=genres, facebook_link=facebookLink, image_link=imageLink, website_link=websiteLink, seeking_talent=seekingTalent, seeking_description=seekingDescription)
+        print(createVenue.__dict__)
+        db.session.add(createVenue)
+        db.session.commit()
 
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
