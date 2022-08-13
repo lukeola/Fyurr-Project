@@ -22,6 +22,7 @@ The tech stack include the following:
 
 You can download and install the dependencies mentioned above and all other dependencies for this project using
 
+```
 pip install -r requirements.txt
 ```
 
