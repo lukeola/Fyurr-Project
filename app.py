@@ -330,7 +330,7 @@ def show_artist(artist_id):
   if (artist == None):
     abort(404)
   
-  def ArtistDetail(details):
+  def artist_details(details):
     show = details[0]
     venue = details[1]
     data = {
@@ -361,8 +361,8 @@ def show_artist(artist_id):
     "seeking_description": artist.seeking_description,
     "image_link": artist.image_link,
     "upcoming_shows_count": upcoming_shows_count,
-    "upcoming_shows": [ArtistDetail(show) for show in upcoming_shows],
-    "past_shows": [ArtistDetail(show) for show in past_shows],
+    "upcoming_shows": [artist_details(show) for show in upcoming_shows],
+    "past_shows": [artist_details(show) for show in past_shows],
     "past_shows_count": past_shows_count
     
   }
@@ -396,10 +396,10 @@ def edit_artist_submission(artist_id):
 # TODO: take values from the form submitted, and update existing
 # artist record with ID <artist_id> using the new attributes
     edit_form = ArtistForm(request.form)
-    artist_to_update = Artist.query.filter(Artist.id == artist_id)
+    update = Artist.query.filter(Artist.id == artist_id)
 
 # updated artist based on user input
-    updated_artist_details = {
+    updated_artist = {
       "name": edit_form.name.data,
       "genres": edit_form.genres.data,
       "city": edit_form.city.data,
@@ -413,7 +413,7 @@ def edit_artist_submission(artist_id):
   }
 
     try:
-        artist_to_update.update(updated_artist_details)
+        update.update(updated_artist)
         db.session.commit()
         flash(f'Artist {edit_form.name.data}  was successfully updated!')
     except:
@@ -438,7 +438,7 @@ def edit_venue_submission(venue_id):
 # TODO: take values from the form submitted, and update existing
 # venue record with ID <venue_id> using the new attributes
   form_submit = VenueForm(request.form)
-  venue_to_update = Venue.query.filter(Venue.id == venue_id)
+  update = Venue.query.filter(Venue.id == venue_id)
   updated_venue = {
     "name": form_submit.name.data,
     "genre": form_submit.genres.data,
@@ -453,7 +453,7 @@ def edit_venue_submission(venue_id):
     "image_link": form_submit.image_link.data
     }
   try:
-      venue_to_update.update(updated_venue)
+      update.update(updated_venue)
       db.session.commit()
       flash('Venue' + form_submit.name.data + ' was successfully updated!')
   except:
@@ -544,7 +544,7 @@ def shows():
 # displays list of shows at /shows
 # TODO: replace with real venues data.
   form = ShowForm()
-  def displayShows(result):
+  def display(result):
     artist = result[0]
     venue = result[1]
     show = result[2]
@@ -558,7 +558,7 @@ def shows():
       }
     return (data)
   results = db.session.query(Artist,Venue,Show).join(Artist).join(Venue).all()
-  data = [displayShows(show) for show in results]
+  data = [display(show) for show in results]
   
   return render_template('pages/shows.html', shows=data)
   
@@ -575,17 +575,17 @@ def create_show_submission():
 # TODO: insert form data as a new Show record in the db, instead
   form = ShowForm()
   try:
-    artistID = request.form.get('artist_id')
-    venueID = request.form.get('venue_id')
+    artist_id = request.form.get('artist_id')
+    venue_id = request.form.get('venue_id')
     startTime = request.form.get('start_time')
-    artistDub = Show.query.filter_by(artist_id=artistID).all()
-    venueDub = Show.query.filter_by(venue_id = venueID).all()
-    startTimeDub = Show.query.filter_by(start_time = startTime).all()
+    artist_rec = Show.query.filter_by(artist_id=artist_id).all()
+    venue_rec = Show.query.filter_by(venue_id = venue_id).all()
+    start_time_rec = Show.query.filter_by(start_time = startTime).all()
 
-    if (artistDub and venueDub and startTimeDub):
+    if (artist_rec and venue_rec and start_time_rec):
         flash('Show  Already Exist!')
     else:
-        createShow = Show(artist_id=artistID, venue_id =venueID, start_time=startTime)
+        createShow = Show(artist_id=artist_id, venue_id =venue_id, start_time=startTime)
         db.session.add(createShow)
         db.session.commit()
         # on successful db insert, flash success
